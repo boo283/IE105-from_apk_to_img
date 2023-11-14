@@ -1,43 +1,43 @@
 import numpy as np
+import zipfile, hashlib, cv2, pathlib
+from concurrent.futures import ThreadPoolExecutor
 from math import sqrt, ceil
-import cv2
-#ref: https://stackoverflow.com/questions/60193896/convert-file-into-grayscale-image
-def convert_apk_to_img(input_file, output_filename):
-    #Input file name (random file I found in my folder).
-    input_file_name = input_file
 
-    #Read the whole file to data
-    with open(input_file_name, 'rb') as binary_file:        
-        data = binary_file.read()
+def convert_apk_to_img(input_file, output_location, image_format):
+    output_filename = ''
+    data = bytearray()
+    with zipfile.ZipFile(input_file, 'r') as apkFile:
+        for file in sorted(apkFile.namelist()):
+            if file.endswith('.dex') or file == 'AndroidManifest.xml' or file == 'resources.arsc':
+                data.extend(apkFile.read(file))
 
-    # Data length in bytes
+    if output_location[len(output_location) - 1] != '/':
+        output_location += '/'
+    output_filename = output_location + hashlib.md5(data).hexdigest() + '.png'
+    
     data_len = len(data)
-
-    # d is a verctor of data_len bytes
     d = np.frombuffer(data, dtype=np.uint8)
+    img_size = int(ceil(sqrt(data_len))) 
+    pad_len = img_size * img_size - data_len
+    shape = (img_size, img_size)
+    if image_format == "RGB":
+        img_size = ceil(sqrt(ceil(data_len / 3)))
+        pad_len = img_size * img_size * 3 - data_len
+        shape = (img_size, img_size, 3)
 
-    # Assume image shape should be close to square
-    sqrt_len = int(ceil(sqrt(data_len)))  # Compute square toot and round up
-
-    # Requiered length in bytes.
-    new_len = sqrt_len*sqrt_len
-
-    # Number of bytes to pad (need to add zeros to the end of d)
-    pad_len = new_len - data_len
-
-    # Pad d with zeros at the end.
-    # padded_d = np.pad(d, (0, pad_len))
     padded_d = np.hstack((d, np.zeros(pad_len, np.uint8)))
-
-    # Reshape 1D array into 2D array with sqrt_len pad_len x sqrt_len (im is going to be a Grayscale image).
-    im = np.reshape(padded_d, (sqrt_len, sqrt_len))
-
-    # Save image
+    im = np.reshape(padded_d, shape)
     cv2.imwrite(output_filename, im)
-    return None
-    # Display image
-    #cv2.imshow('im' ,im)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
+    
 
-
+def convert_apks_to_imgs(input_location, output_location, image_format):
+    apkFiles = [] 
+    directory = pathlib.Path(input_location)
+    for entry in directory.iterdir():
+        if entry.is_file() and entry.name.endswith('.apk'):
+            apkFiles.append(entry)
+    with ThreadPoolExecutor() as pool:
+        for file in apkFiles:
+            pool.submit(convert_apk_to_img, file, output_location, image_format)
+        
+    
