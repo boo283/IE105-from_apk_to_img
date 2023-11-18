@@ -1,3 +1,4 @@
+#REF: https://stackoverflow.com/questions/60193896/convert-file-into-grayscale-image
 import numpy as np
 import zipfile, hashlib, cv2, pathlib
 from concurrent.futures import ThreadPoolExecutor
