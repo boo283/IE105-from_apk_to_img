@@ -47,7 +47,7 @@ root.title("Chuyển đổi tập tin APK sang ảnh PNG")
 
 select_input = Combobox(root, font = ('Arial',10),width = 30)
 select_input['value'] = ('Chọn tập tin apk','Chọn thư mục chứa tập tin apk')
-select_input.grid(row=0, column=0, padx=10, pady=10)
+select_input.grid(row=0, column=0, padx=40, pady=10)
 select_input.current(0)
 
 
@@ -55,7 +55,7 @@ input_entry = tk.Entry(root, width=60)
 input_entry.grid(row=0, column=1, padx=10, pady=10)
 
 output_label = tk.Label(root, text="Chọn thư mục lưu:")
-output_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+output_label.grid(row=1, column=0, padx=80, pady=10, sticky="w")
 output_entry = tk.Entry(root, width=60)
 output_entry.grid(row=1, column=1, padx=10, pady=10)
 
