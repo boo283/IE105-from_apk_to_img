@@ -2,7 +2,7 @@ import tkinter as tk
 import a2i, os
 from tkinter import filedialog
 from tkinter.ttk import *
-
+import time
 def convert_image(input_path, output_path):
     try:
         image_format = select_type_img.get()
@@ -34,9 +34,13 @@ def save_file():
     input_path = input_entry.get()
     output_path = output_entry.get()
     if input_path and output_path:
+        start = time.time()
         convert_image(input_path, output_path)
+        end = time.time()
+        print(f"Thoi gian chay: {end-start:.4f} giay")
     else:
         result_label.config(text="Vui lòng chọn đường dẫn", fg="red")
+    return end-start
 
 
 # Tạo cửa sổ chính
